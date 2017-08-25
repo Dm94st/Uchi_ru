@@ -83,13 +83,10 @@
     },
     CreateInputBox:function (x, y)
     {
-      let inputBox = document.createElement("input");
-      inputBox.maxLength = "1";
-      inputBox.type = "text";
-      inputBox.style = "left:" + x.toString() + "px;" +
-                      "top:"  + y.toString() + "px;";
-      inputBox.className = "inbox";
-      $(".insideWrapper")[0].appendChild(inputBox);
+      let inputBox = $('<input type="text" class = "inbox" maxLength = "1" style =' 
+                      + "left:" + x.toString() + "px;" + 
+                        "top:"  + y.toString() + "px;" + '>');
+      $(".insideWrapper").append(inputBox);
     },
     DrawCurve:function (coordsArray, beginNum, endNum)
     {
@@ -162,14 +159,17 @@
       $("div.equation span")[valInd].style["background-color"] = "orange";
       $("div.equation span")[valInd].style["border-radius"] = "5px";
     },
+
     ErrorInboxStyle:function (boxInd)
     {
       $(".inbox")[boxInd].style["color"] = "red";
     },
+
     ResetValueStyle:function (valInd)
     {
       $("div.equation span")[valInd].style["background-color"] = "white";
     },
+
     ResetInboxStyle:function (boxInd)
     {
       // Turn off input box
@@ -181,56 +181,57 @@
   }
 
   $(document).ready(function(){
-    let returnedValues = EquationTools.InitEquation();
-    let coordsArray = DrawTools.MapImage();
+    var returnedValues = EquationTools.InitEquation();
+    var coordsArray = DrawTools.MapImage();
     DrawTools.DrawCurve(coordsArray, 0, returnedValues.a);
 
-    $(".inbox").on('keyup', function(e)
-    {
-      if(this.value == returnedValues.a)
+      function ValidateB()
       {
-        StyleTools.ResetInboxStyle(0);
-        StyleTools.ResetValueStyle(0); // A value
-        DrawTools.DrawCurve(coordsArray,returnedValues.a,returnedValues.result);
-        $(".inbox").on('keyup', function(e)
+        if(this.value == returnedValues.b) 
         {
-          if(this.value == returnedValues.b)
-          {
-            StyleTools.ResetInboxStyle(1);
-            StyleTools.ResetValueStyle(2); // B value
+          StyleTools.ResetInboxStyle(1);
+          StyleTools.ResetValueStyle(2); // B value 
 
-            // Question(?) replace on inputbox
-            $("div.equation span")[4].innerHTML =
-             "<input class = 'inbox' " +
-             "maxlength = '2' " +
-             "type = 'text' " +
-             "style = 'width:50px; height:30px; bottom:2px; position:relative;' >"
+          $("div.equation span")[4].innerHTML =
+          "<input class = 'inbox' " +
+          "maxlength = '2' " +
+          "type = 'text' " +
+          "style = 'width:50px; height:30px; bottom:2px; position:relative;' >"
 
-            $(".inbox").on('keyup', function(e){
-              if(this.value == returnedValues.result)
-              {
-                console.log(this);
-                StyleTools.ResetInboxStyle(0);
-              }
-              else
-              {
-                StyleTools.ErrorInboxStyle(0);
-              }
-            })
-          }
-          else
-          {
-            StyleTools.ErrorInboxStyle(1);
-            StyleTools.ErrorValueStyle(2); // B value
-          }
-        })
+          $(".inbox").bind('keyup', ValidateRes);
+        }
+        else
+        {
+          StyleTools.ErrorInboxStyle(1);
+          StyleTools.ErrorValueStyle(2); // B value
+        }
       }
-      else
+      function ValidateRes()
       {
-        StyleTools.ErrorInboxStyle(0);
-        StyleTools.ErrorValueStyle(0);
+        if(this.value == returnedValues.result)
+        {
+          StyleTools.ResetInboxStyle(0);
+        }
+        else
+        {
+          StyleTools.ErrorInboxStyle(0);
+        }
       }
-    })
+      $(".inbox").on('keyup', function(e)
+      {
+        if(this.value == returnedValues.a)
+        {
+          StyleTools.ResetInboxStyle(0);
+          StyleTools.ResetValueStyle(0); // A value
+          DrawTools.DrawCurve(coordsArray,returnedValues.a,returnedValues.result);
+          $(".inbox").bind('keyup', ValidateB)
+        }
+        else
+        {
+          StyleTools.ErrorInboxStyle(0);
+          StyleTools.ErrorValueStyle(0);
+        }
+      })
   });
   </script>
 </head>
