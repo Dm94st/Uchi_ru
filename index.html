@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Axis-2 </title>
+  <style>
+  .line  {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 875px;
+     height: 332px;
+     margin-top: -41px; /* Half the height */
+     margin-left: -437px; /* Half the width */
+     /*border:1px solid blue;*/
+  }
+  .insideWrapper {
+    width:100%;
+    height:25%;
+    top:40%;
+    position:relative;
+  }
+  .coveredImage {
+    width:100%;
+    height:100%;
+    position:absolute;
+    top:0px;
+    left:0px;
+  }
+  .coveringCanvas {
+    width:100%;
+    height:332px;
+    position:relative;
+    top:-160%;
+    left:0%;
+    /*background-color: rgba(255, 0, 0, .1);*/
+  }
+  .equation {
+    position: absolute;
+    top: 20%;
+    left: 40%;
+  }
+  .equation span
+  {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 45px;
+    display: inline-block;
+    text-align: center;
+    margin:5px;
+  }
+  .inbox
+  {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 40px;
+    text-align: center;
+    width:25px;
+    height:30px;
+    border-radius: 5px;
+    /*top:-100px;*/
+    position:absolute;
+  }
+  </style>
+  <script
+    src="https://code.jquery.com/jquery-1.10.2.js">
+  </script>
+  <script>
+
+  var DrawTools = {
+    MapImage:function ()
+    {
+      let coordsArray = [];
+      const SHIFT = 38.3; // Distance between numbers on line
+      let x = 0, y = 0, w = SHIFT, h = 83;
+      for(var i = 0; i <= 20; i++)
+      {
+        let currRect = document.createElement('area');
+        currRect.className = "number";
+        currRect.shape = "rect";
+        currRect.coords = [ x += SHIFT, y, w += SHIFT, h].toString();
+        $(".imagemap")[0].appendChild(currRect);
+        coordsArray.push([x, y, w, h]);
+      }
+      return coordsArray;
+    },
+    CreateInputBox:function (x, y)
+    {
+      let inputBox = document.createElement("input");
+      inputBox.maxLength = "1";
+      inputBox.type = "text";
+      inputBox.style = "left:" + x.toString() + "px;" +
+                      "top:"  + y.toString() + "px;";
+      inputBox.className = "inbox";
+      $(".insideWrapper")[0].appendChild(inputBox);
+    },
+    DrawCurve:function (coordsArray, beginNum, endNum)
+    {
+      const ARROW_WIDTH = 15;
+      let srcPtX = coordsArray[beginNum][0];
+      let srcPtY = 150;
+      let dstPtX = coordsArray[endNum][0];
+      let dstPtY = 150;
+      let length = dstPtX - srcPtX;
+      let quadPtX = (srcPtX + dstPtX)/2;
+      let quadPtY = -40;
+      
+      let ctx = $(".coveringCanvas")[0].getContext("2d");
+      let arrowAngle = Math.atan2(quadPtX - dstPtX, length/quadPtY - dstPtY) + Math.PI;
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle="red";
+
+      ctx.beginPath();
+      ctx.moveTo(srcPtX, srcPtY);
+      ctx.quadraticCurveTo(quadPtX, length/quadPtY, dstPtX, dstPtY);
+      ctx.moveTo(dstPtX - (ARROW_WIDTH * Math.sin(arrowAngle - Math.PI / 6)),
+                dstPtY - (ARROW_WIDTH * Math.cos(arrowAngle - Math.PI / 6)));
+      ctx.lineTo(dstPtX, dstPtY);
+      ctx.lineTo(dstPtX - (ARROW_WIDTH * Math.sin(arrowAngle + Math.PI / 6)),
+                dstPtY - (ARROW_WIDTH * Math.cos(arrowAngle + Math.PI / 6)));
+      ctx.stroke();
+      ctx.closePath();
+
+      let inBoxXcoord = quadPtX - 15; // 12.5 - 1/2 width of box
+      let inBoxYcoord = 110 - Math.abs(length/quadPtY);
+
+      DrawTools.CreateInputBox(inBoxXcoord, -inBoxYcoord);
+    }
+  }
+  var EquationTools = {
+    RandomValue:function (min, max)
+    {
+      let randVal = min + Math.random() * (max + 1 - min);
+      randVal = Math.floor(randVal);
+      return randVal;
+    },
+    InitEquation:function ()
+    {
+      let aValue, bValue, resValue, isRight = 0;
+      let operandValues = {};
+      // Value in range from 6 to 9
+      aValue = EquationTools.RandomValue(6, 9);
+      console.log(aValue);
+      // Value in range from 11 - a to 14 - a
+      bValue = EquationTools.RandomValue(11 - aValue, 14 - aValue);
+      console.log(bValue);
+      // Result value
+      resValue = aValue + bValue;
+      console.log(resValue);
+      $("div.equation").html("<span>" + aValue + "</span>" +
+                            "<span>" + " + "   + "</span>" +
+                            "<span>" + bValue  + "</span>" +
+                            "<span>" + " = "   + "</span>" +
+                            "<span>" + " ? "   + "</span>");
+      operandValues["a"] = aValue;
+      operandValues["b"] = bValue;
+      operandValues["result"] = resValue;
+      return operandValues;
+    }
+  }
+  var StyleTools = {
+    ErrorValueStyle:function (valInd)
+    {
+      $("div.equation span")[valInd].style["background-color"] = "orange";
+      $("div.equation span")[valInd].style["border-radius"] = "5px";
+    },
+
+    ErrorInboxStyle:function (boxInd)
+    {
+      $(".inbox")[boxInd].style["color"] = "red";
+    },
+
+    ResetValueStyle:function (valInd)
+    {
+      $("div.equation span")[valInd].style["background-color"] = "white";
+    },
+
+    ResetInboxStyle:function (boxInd)
+    {
+      // Turn off input box
+      $(".inbox")[boxInd].disabled = "disabled";
+      // Reset styles
+      $(".inbox")[boxInd].style["border"] = "none";
+      $(".inbox")[boxInd].style["color"] = "black";
+    }
+  }
+
+  $(document).ready(function(){
+    let returnedValues = EquationTools.InitEquation();
+    let coordsArray = DrawTools.MapImage();
+    DrawTools.DrawCurve(coordsArray, 0, returnedValues.a);
+
+    $(".inbox").on('keyup', function(e)
+    {
+      if(this.value == returnedValues.a)
+      {
+        StyleTools.ResetInboxStyle(0);
+        StyleTools.ResetValueStyle(0); // A value
+        DrawTools.DrawCurve(coordsArray,returnedValues.a,returnedValues.result);
+        $(".inbox").on('keyup', function(e)
+        {
+          if(this.value == returnedValues.b)
+          {
+            StyleTools.ResetInboxStyle(1);
+            StyleTools.ResetValueStyle(2); // B value
+
+            // Question(?) replace on inputbox
+            $("div.equation span")[4].innerHTML =
+             "<input class = 'inbox' " +
+             "maxlength = '2' " +
+             "type = 'text' " +
+             "style = 'width:50px; height:30px; bottom:2px; position:relative;' >"
+
+            $(".inbox").on('keyup', function(e){
+              if(this.value == returnedValues.result)
+              {
+                console.log(this);
+                StyleTools.ResetInboxStyle(0);
+              }
+              else
+              {
+                StyleTools.ErrorInboxStyle(0);
+              }
+            })
+          }
+          else
+          {
+            StyleTools.ErrorInboxStyle(1);
+            StyleTools.ErrorValueStyle(2); // B value
+          }
+        })
+      }
+      else
+      {
+        StyleTools.ErrorInboxStyle(0);
+        StyleTools.ErrorValueStyle(0);
+      }
+    })
+  });
+  </script>
+</head>
+<body>
+  <!-- Solve example -->
+  <div class = "equation">
+  </div>
+  <!-- Line image; resolution: 875x83 -->
+  <div class = "line">
+    <div class = "insideWrapper">
+      <img src="sprite.png" alt="Rule" usemap = "#linemap" class="coveredImage">
+        <canvas class="coveringCanvas" width = "875px" height="332px"> </canvas>
+      <map class = "imagemap" name="linemap"> </map>
+    </div>
+  </div>
+</body>
+</html>
