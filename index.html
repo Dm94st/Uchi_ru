@@ -83,8 +83,8 @@
     },
     CreateInputBox:function (x, y)
     {
-      let inputBox = $('<input type="text" class = "inbox" maxLength = "1" style =' 
-                      + "left:" + x.toString() + "px;" + 
+      let inputBox = $('<input type="text" class = "inbox" maxLength = "1" style ='
+                      + "left:" + x.toString() + "px;" +
                         "top:"  + y.toString() + "px;" + '>');
       $(".insideWrapper").append(inputBox);
     },
@@ -97,29 +97,32 @@
       let dstPtY = 150;
       let length = dstPtX - srcPtX;
       let quadPtX = (srcPtX + dstPtX)/2;
-      let quadPtY = -40;
-      
+      let quadPtY = 80; // Default Y value for control point
+      quadPtY = (quadPtY*100)/length; // Recalculated Y value for control point based on length btw points
+      console.log(quadPtY);
+
       let ctx = $(".coveringCanvas")[0].getContext("2d");
-      let arrowAngle = Math.atan2(quadPtX - dstPtX, length/quadPtY - dstPtY) + Math.PI;
+      let arrowAngle = Math.atan2(quadPtX - dstPtX, quadPtY - dstPtY) + Math.PI;
 
       ctx.lineWidth = 2;
-      ctx.strokeStyle="red";
+      ctx.strokeStyle = "red";
 
       ctx.beginPath();
       ctx.moveTo(srcPtX, srcPtY);
-      ctx.quadraticCurveTo(quadPtX, length/quadPtY, dstPtX, dstPtY);
+      ctx.quadraticCurveTo(quadPtX, quadPtY, dstPtX, dstPtY);
       ctx.moveTo(dstPtX - (ARROW_WIDTH * Math.sin(arrowAngle - Math.PI / 6)),
-                dstPtY - (ARROW_WIDTH * Math.cos(arrowAngle - Math.PI / 6)));
+                 dstPtY - (ARROW_WIDTH * Math.cos(arrowAngle - Math.PI / 6)));
       ctx.lineTo(dstPtX, dstPtY);
       ctx.lineTo(dstPtX - (ARROW_WIDTH * Math.sin(arrowAngle + Math.PI / 6)),
-                dstPtY - (ARROW_WIDTH * Math.cos(arrowAngle + Math.PI / 6)));
+                 dstPtY - (ARROW_WIDTH * Math.cos(arrowAngle + Math.PI / 6)));
       ctx.stroke();
       ctx.closePath();
 
       let inBoxXcoord = quadPtX - 15; // 12.5 - 1/2 width of box
-      let inBoxYcoord = 110 - Math.abs(length/quadPtY);
+      let inBoxYcoord = -115 + quadPtY/1.5;
+      console.log(inBoxYcoord)
 
-      DrawTools.CreateInputBox(inBoxXcoord, -inBoxYcoord);
+      DrawTools.CreateInputBox(inBoxXcoord, inBoxYcoord);
     }
   }
   var EquationTools = {
@@ -184,10 +187,10 @@
 
       function ValidateB()
       {
-        if(this.value == returnedValues.b) 
+        if(this.value == returnedValues.b)
         {
           StyleTools.ResetInboxStyle(1);
-          StyleTools.ResetValueStyle(2); // B value 
+          StyleTools.ResetValueStyle(2); // B value
 
           $("div.equation span")[4].innerHTML =
           "<input class = 'inbox' " +
